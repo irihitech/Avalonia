@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -41,12 +42,12 @@ namespace Avalonia.Controls
             set => SetValue(DelayProperty, value);
         }
 
-        private void StartTimer()
+        private void StartTimer(ButtonClickEventArgs args)
         {
             if (_repeatTimer == null)
             {
                 _repeatTimer = new DispatcherTimer();
-                _repeatTimer.Tick += RepeatTimerOnTick;
+                _repeatTimer.Tick += (o, e) => RepeatTimerOnTick(o, e, args);
             }
 
             if (_repeatTimer.IsEnabled) return;
@@ -55,14 +56,14 @@ namespace Avalonia.Controls
             _repeatTimer.Start();
         }
 
-        private void RepeatTimerOnTick(object? sender, EventArgs e)
+        private void RepeatTimerOnTick(object? sender, EventArgs e, ButtonClickEventArgs args)
         {
             var interval = TimeSpan.FromMilliseconds(Interval);
             if (_repeatTimer!.Interval != interval)
             {
                 _repeatTimer.Interval = interval;
             }
-            OnClick();
+            OnClick(args);
         }
 
         private void StopTimer()
@@ -86,7 +87,7 @@ namespace Avalonia.Controls
 
             if (e.Key == Key.Space)
             {
-                StartTimer();
+                StartTimer(new ButtonClickEventArgs(e.KeyModifiers));
             }
         }
 
@@ -103,7 +104,7 @@ namespace Avalonia.Controls
 
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                StartTimer();
+                StartTimer(new ButtonClickEventArgs(e.KeyModifiers));
             }
         }
 

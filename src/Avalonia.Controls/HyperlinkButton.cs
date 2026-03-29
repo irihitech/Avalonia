@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Metadata;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
@@ -74,10 +75,15 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        [Obsolete("Use OnClick(ButtonClickEventArgs) instead to provide key modifier information.")]
         protected override void OnClick()
         {
-            base.OnClick();
+            OnClick(new ButtonClickEventArgs());
+        }
 
+        protected override void OnClick(ButtonClickEventArgs args)
+        {
+            base.OnClick(args);
             Uri? uri = NavigateUri;
             if (uri is not null)
             {

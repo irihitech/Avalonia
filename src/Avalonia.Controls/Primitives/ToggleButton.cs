@@ -70,10 +70,17 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(IsThreeStateProperty, value);
         }
 
+        [Obsolete("Use OnClick(ButtonClickEventArgs) instead to provide key modifier information.")]
         protected override void OnClick()
         {
             Toggle();
             base.OnClick();
+        }
+
+        protected override void OnClick(ButtonClickEventArgs args)
+        {
+            Toggle();
+            base.OnClick(args);
         }
 
         /// <summary>

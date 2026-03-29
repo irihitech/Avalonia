@@ -298,7 +298,7 @@ namespace Avalonia.Controls
             switch (e.Key)
             {
                 case Key.Enter:
-                    OnClick();
+                    OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                     e.Handled = true;
                     break;
                 case Key.Space:
@@ -307,7 +307,7 @@ namespace Avalonia.Controls
                     {
                         if (ClickMode == ClickMode.Press)
                         {
-                            OnClick();
+                            OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                         }
 
                         IsPressed = true;
@@ -330,7 +330,7 @@ namespace Avalonia.Controls
             {
                 if (ClickMode == ClickMode.Release)
                 {
-                    OnClick();
+                    OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                 }
                 IsPressed = false;
                 e.Handled = true;
@@ -342,7 +342,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invokes the <see cref="Click"/> event.
         /// </summary>
+        [Obsolete("Use OnClick(ButtonClickEventArgs) instead to provide key modifier information.")]
         protected virtual void OnClick()
+        {
+            OnClick(new ButtonClickEventArgs());
+        }
+
+        protected virtual void OnClick(ButtonClickEventArgs args)
         {
             if (IsEffectivelyEnabled)
             {
@@ -355,7 +361,8 @@ namespace Avalonia.Controls
                     OpenFlyout();
                 }
 
-                var e = new RoutedEventArgs(ClickEvent);
+                var e = args;
+                e.RoutedEvent = ClickEvent;
                 RaiseEvent(e);
 
                 (var command, var parameter) = (Command, CommandParameter);
@@ -411,7 +418,7 @@ namespace Avalonia.Controls
                     // When a flyout is open with OverlayDismissEventPassThrough enabled and the button is pressed,
                     // close the flyout, but do not transition to a pressed state
                     e.Handled = true;
-                    OnClick();
+                    OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                 }
                 else
                 {
@@ -420,7 +427,7 @@ namespace Avalonia.Controls
 
                     if (ClickMode == ClickMode.Press)
                     {
-                        OnClick();
+                        OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                     }
                 }
             }
@@ -439,7 +446,7 @@ namespace Avalonia.Controls
                 if (ClickMode == ClickMode.Release &&
                     this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
                 {
-                    OnClick();
+                    OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                 }
             }
         }
@@ -684,7 +691,7 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Enter && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
-                OnClick();
+                OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                 e.Handled = true;
             }
         }
@@ -698,7 +705,7 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Escape && IsEffectivelyVisible && IsEffectivelyEnabled)
             {
-                OnClick();
+                OnClick(new ButtonClickEventArgs(e.KeyModifiers));
                 e.Handled = true;
             }
         }
