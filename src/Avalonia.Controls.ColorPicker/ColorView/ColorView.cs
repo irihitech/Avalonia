@@ -195,6 +195,9 @@ namespace Avalonia.Controls
                 return;
             }
 
+            // Call base first so Color/HsvColor are synchronized before the hex text box is updated.
+            // The base class sets _ignorePropertyChanged during sync to prevent re-entrancy, and it
+            // is guaranteed to be false again by the time control returns here.
             base.OnPropertyChanged(change);
 
             // Update the hex text box after base class syncs Color/HsvColor
