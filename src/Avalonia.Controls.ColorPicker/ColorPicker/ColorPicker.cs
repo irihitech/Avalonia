@@ -10,7 +10,8 @@ namespace Avalonia.Controls
     /// Presents a color for user editing using a spectrum, palette and component sliders within a drop down.
     /// Editing is available when the drop down flyout is opened; otherwise, only the preview content area is shown.
     /// </summary>
-    public class ColorPicker : ColorView
+    [TemplatePart("PART_ColorView", typeof(ColorView))]
+    public class ColorPicker : ColorPickerBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorPicker"/> class.
