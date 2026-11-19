@@ -586,7 +586,20 @@ enum AvnStandardCursorType
     CursorDragMove,
     CursorDragCopy,
     CursorDragLink,
-    CursorNone
+    CursorNone,
+    CursorSizeNorthWestSouthEast,
+    CursorSizeNorthEastSouthWest,
+    CursorGrab,
+    CursorGrabbing,
+    CursorZoomIn,
+    CursorZoomOut,
+    CursorCell,
+    CursorVerticalText,
+    CursorContextualMenu,
+    CursorNoDrop,
+    CursorAllScroll,
+    CursorColResize,
+    CursorRowResize
 }
 
 enum AvnWindowEdge

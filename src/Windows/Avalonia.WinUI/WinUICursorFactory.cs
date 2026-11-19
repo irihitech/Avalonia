@@ -58,34 +58,8 @@ internal sealed class WinUICursorFactory : ICursorFactory
             new WinUICursorImpl(InputSystemCursor.Create(InputSystemCursorShape.Arrow)));
     }
 
-    private static InputSystemCursorShape? MapShape(StandardCursorType t) => t switch
-    {
-        StandardCursorType.None => null,
-        StandardCursorType.Arrow => InputSystemCursorShape.Arrow,
-        StandardCursorType.Ibeam => InputSystemCursorShape.IBeam,
-        StandardCursorType.Wait => InputSystemCursorShape.Wait,
-        StandardCursorType.AppStarting => InputSystemCursorShape.Wait,
-        StandardCursorType.Cross => InputSystemCursorShape.Cross,
-        StandardCursorType.Help => InputSystemCursorShape.Help,
-        StandardCursorType.Hand => InputSystemCursorShape.Hand,
-        StandardCursorType.No => InputSystemCursorShape.UniversalNo,
-        StandardCursorType.SizeAll => InputSystemCursorShape.SizeAll,
-        StandardCursorType.SizeNorthSouth => InputSystemCursorShape.SizeNorthSouth,
-        StandardCursorType.SizeWestEast => InputSystemCursorShape.SizeWestEast,
-        StandardCursorType.UpArrow => InputSystemCursorShape.UpArrow,
-        StandardCursorType.TopSide => InputSystemCursorShape.SizeNorthSouth,
-        StandardCursorType.BottomSide => InputSystemCursorShape.SizeNorthSouth,
-        StandardCursorType.LeftSide => InputSystemCursorShape.SizeWestEast,
-        StandardCursorType.RightSide => InputSystemCursorShape.SizeWestEast,
-        StandardCursorType.TopLeftCorner => InputSystemCursorShape.SizeNorthwestSoutheast,
-        StandardCursorType.BottomRightCorner => InputSystemCursorShape.SizeNorthwestSoutheast,
-        StandardCursorType.TopRightCorner => InputSystemCursorShape.SizeNortheastSouthwest,
-        StandardCursorType.BottomLeftCorner => InputSystemCursorShape.SizeNortheastSouthwest,
-        // No built-in drag cursors — fall back to Arrow; OLE drag operations on
-        // Win32 traditionally use ole32.dll resources we can't reach from here.
-        StandardCursorType.DragMove => InputSystemCursorShape.Arrow,
-        StandardCursorType.DragCopy => InputSystemCursorShape.Arrow,
-        StandardCursorType.DragLink => InputSystemCursorShape.Arrow,
-        _ => InputSystemCursorShape.Arrow,
-    };
+    private static InputSystemCursorShape? MapShape(StandardCursorType t) =>
+        t == StandardCursorType.None
+            ? null
+            : (InputSystemCursorShape)StandardCursorTypeCursorShapes.GetMapping(t);
 }

@@ -7,6 +7,7 @@
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Wayland.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Cursors.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 
   <ItemGroup>

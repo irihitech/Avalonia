@@ -17,9 +17,9 @@ namespace Avalonia.X11
         private readonly IntPtr _display;
         private Dictionary<StandardCursorType, IntPtr> _cursors;
 
-        private static readonly Dictionary<StandardCursorType, CursorFontShape> s_mapping =
+        internal static readonly Dictionary<StandardCursorType, CursorFontShape> s_mapping =
             new Dictionary<StandardCursorType, CursorFontShape>
-            {
+        {
                 {StandardCursorType.Arrow, CursorFontShape.XC_left_ptr},
                 {StandardCursorType.Cross, CursorFontShape.XC_cross},
                 {StandardCursorType.Hand, CursorFontShape.XC_hand2},
@@ -43,14 +43,46 @@ namespace Avalonia.X11
                 {StandardCursorType.SizeWestEast, CursorFontShape.XC_sb_h_double_arrow},
                 {StandardCursorType.TopLeftCorner, CursorFontShape.XC_top_left_corner},
                 {StandardCursorType.TopRightCorner, CursorFontShape.XC_top_right_corner},
+                // Font-cursor fallbacks for cursors primarily loaded from the theme
+                {StandardCursorType.SizeNorthWestSouthEast, CursorFontShape.XC_top_left_corner},
+                {StandardCursorType.SizeNorthEastSouthWest, CursorFontShape.XC_top_right_corner},
+                {StandardCursorType.Grab, CursorFontShape.XC_hand1},
+                // No closed-hand font glyph, hand2 is the closest approximation
+                {StandardCursorType.Grabbing, CursorFontShape.XC_hand2},
+                {StandardCursorType.ZoomIn, CursorFontShape.XC_plus},
+                {StandardCursorType.Cell, CursorFontShape.XC_cross},
+                {StandardCursorType.VerticalText, CursorFontShape.XC_xterm},
+                {StandardCursorType.NoDrop, CursorFontShape.XC_X_cursor},
+                {StandardCursorType.AllScroll, CursorFontShape.XC_fleur},
+                {StandardCursorType.ColResize, CursorFontShape.XC_sb_h_double_arrow},
+                {StandardCursorType.RowResize, CursorFontShape.XC_sb_v_double_arrow},
+                // ZoomOut and ContextualMenu have no font-glyph equivalent, they fall back to the arrow
             };
 
-        private static readonly Dictionary<StandardCursorType, string> s_libraryCursors = new()
+        /// <summary>
+        /// Theme cursor names tried in order: the CSS/XDG standard name first, then
+        /// legacy aliases that predate it in older themes. Font-cursor fallbacks for
+        /// these live in <see cref="s_mapping"/>.
+        /// </summary>
+        internal static readonly Dictionary<StandardCursorType, string[]> s_libraryCursors = new()
         {
-            {StandardCursorType.DragCopy, "dnd-copy"},
-            {StandardCursorType.DragLink, "dnd-link"},
-            {StandardCursorType.DragMove, "dnd-move"},
-            // TODO: Check if other platforms have dnd-none, dnd-no-drop and dnd-ask
+            {StandardCursorType.DragCopy, ["dnd-copy"]},
+            {StandardCursorType.DragLink, ["dnd-link"]},
+            {StandardCursorType.DragMove, ["dnd-move"]},
+            {StandardCursorType.AppStarting, ["progress"]},
+            {StandardCursorType.SizeNorthWestSouthEast, ["nwse-resize", "size_fdiag"]},
+            {StandardCursorType.SizeNorthEastSouthWest, ["nesw-resize", "size_bdiag"]},
+            {StandardCursorType.Grab, ["grab", "openhand", "hand1"]},
+            {StandardCursorType.Grabbing, ["grabbing", "closedhand", "hand2"]},
+            {StandardCursorType.ZoomIn, ["zoom-in"]},
+            {StandardCursorType.ZoomOut, ["zoom-out"]},
+            {StandardCursorType.Cell, ["cell"]},
+            {StandardCursorType.VerticalText, ["vertical-text"]},
+            {StandardCursorType.ContextualMenu, ["context-menu"]},
+            {StandardCursorType.NoDrop, ["no-drop", "forbidden", "crossed_circle"]},
+            {StandardCursorType.AllScroll, ["all-scroll", "fleur"]},
+            {StandardCursorType.ColResize, ["col-resize", "sb_h_double_arrow"]},
+            {StandardCursorType.RowResize, ["row-resize", "sb_v_double_arrow"]},
         };
 
         public X11CursorFactory(IntPtr display)
@@ -147,26 +179,50 @@ namespace Avalonia.X11
             }
         }
         
-        private nint GetCursorHandleCached(StandardCursorType type)
+        private nint GetCursorHandleCached(StandardCursorType type) =>
+            GetOrLoadCursorHandle(type, _cursors,
+                name => XLib.XcursorLibraryLoadCursor(_display, name),
+                shape => XLib.XCreateFontCursor(_display, shape),
+                _nullCursor);
+
+        /// <summary>
+        /// Resolution chain for a standard cursor: theme cursor names in order, then the
+        /// font-cursor fallback from <see cref="s_mapping"/>, then the arrow cursor.
+        /// Static with injectable loaders so tests can simulate themes missing the
+        /// CSS/XDG names and assert the actual fallback result.
+        /// </summary>
+        internal static nint GetOrLoadCursorHandle(
+            StandardCursorType type,
+            Dictionary<StandardCursorType, nint> cache,
+            Func<string, nint> loadLibraryCursor,
+            Func<CursorFontShape, nint> loadFontCursor,
+            nint nullCursor)
         {
-            if (!_cursors.TryGetValue(type, out var handle))
+            if (cache.TryGetValue(type, out var handle))
+                return handle;
+
+            if (s_libraryCursors.TryGetValue(type, out var names))
             {
-                if (s_libraryCursors.TryGetValue(type, out var cursorName))
-                    handle = XLib.XcursorLibraryLoadCursor(_display, cursorName);
-
-                if (handle == 0 && s_mapping.TryGetValue(type, out var cursorShape))
-                    handle = XLib.XCreateFontCursor(_display, cursorShape);
-
-                if (handle == IntPtr.Zero)
+                foreach (var name in names)
                 {
-                    if (type != StandardCursorType.Arrow)
-                        handle = GetCursorHandleCached(StandardCursorType.Arrow);
-                    else
-                        handle = _nullCursor;
+                    handle = loadLibraryCursor(name);
+                    if (handle != 0)
+                        break;
                 }
-                
-                _cursors[type] = handle;
             }
+
+            if (handle == 0 && s_mapping.TryGetValue(type, out var cursorShape))
+                handle = loadFontCursor(cursorShape);
+
+            if (handle == IntPtr.Zero)
+            {
+                if (type != StandardCursorType.Arrow)
+                    handle = GetOrLoadCursorHandle(StandardCursorType.Arrow, cache, loadLibraryCursor, loadFontCursor, nullCursor);
+                else
+                    handle = nullCursor;
+            }
+
+            cache[type] = handle;
 
             return handle;
         }

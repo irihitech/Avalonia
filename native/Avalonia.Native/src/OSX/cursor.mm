@@ -18,6 +18,8 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
     ComPtr<Cursor> resizeRightCursor = comnew<Cursor>([NSCursor resizeRightCursor]);
     ComPtr<Cursor> resizeWestEastCursor = comnew<Cursor>([NSCursor resizeLeftRightCursor]);
     ComPtr<Cursor> operationNotAllowedCursor = comnew<Cursor>([NSCursor operationNotAllowedCursor]);
+    ComPtr<Cursor> closedHandCursor = comnew<Cursor>([NSCursor closedHandCursor]);
+    ComPtr<Cursor> IBeamVerticalCursor = comnew<Cursor>([NSCursor IBeamCursorForVerticalLayout]);
     ComPtr<Cursor> noCursor = comnew<Cursor>([NSCursor arrowCursor], true);
 
     std::map<AvnStandardCursorType, ComPtr<Cursor>> s_cursorMap =
@@ -37,7 +39,9 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
         { CursorUpArrow, resizeUpCursor },
         { CursorBottomSize, resizeDownCursor },
         { CursorDragCopy, dragCopyCursor },
-        { CursorDragMove, openHandCursor },
+        // AppKit has no drag-move cursor; dragCopy/dragLink are arrow-based, so the
+        // plain arrow conveys "drop will move" — openHand is reserved for Grab.
+        { CursorDragMove, arrowCursor },
         { CursorDragLink, dragLinkCursor },
         { CursorHand, pointingHandCursor },
         { CursorHelp, contextualMenuCursor },
@@ -45,7 +49,21 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
         { CursorLeftSide, resizeLeftCursor },
         { CursorRightSide, resizeRightCursor },
         { CursorNo, operationNotAllowedCursor },
-        { CursorNone, noCursor }
+        { CursorNone, noCursor },
+        // No native NSCursor equivalent — closest standard shape
+        { CursorSizeNorthWestSouthEast, crossCursor },
+        { CursorSizeNorthEastSouthWest, crossCursor },
+        { CursorGrab, openHandCursor },
+        { CursorGrabbing, closedHandCursor },
+        { CursorZoomIn, arrowCursor },
+        { CursorZoomOut, arrowCursor },
+        { CursorCell, crossCursor },
+        { CursorVerticalText, IBeamVerticalCursor },
+        { CursorContextualMenu, contextualMenuCursor },
+        { CursorNoDrop, operationNotAllowedCursor },
+        { CursorAllScroll, openHandCursor },
+        { CursorColResize, resizeWestEastCursor },
+        { CursorRowResize, resizeUpDownCursor }
     };
 
 public:

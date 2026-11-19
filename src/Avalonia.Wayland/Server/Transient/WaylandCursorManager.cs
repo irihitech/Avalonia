@@ -18,7 +18,7 @@ partial class WaylandCursorManager : IDisposable
     [DefinitelyNotARecord]
     internal readonly partial struct CursorEntry(WlSurface Surface, WlBuffer buffer, int HotspotX, int HotspotY);
 
-    private static readonly Dictionary<StandardCursorType, string[]> CursorNames = new()
+    internal static readonly Dictionary<StandardCursorType, string[]> CursorNames = new()
     {
         { StandardCursorType.Arrow, ["default", "left_ptr"] },
         { StandardCursorType.Ibeam, ["text", "xterm"] },
@@ -40,9 +40,24 @@ partial class WaylandCursorManager : IDisposable
         { StandardCursorType.TopRightCorner, ["top_right_corner", "ne-resize"] },
         { StandardCursorType.BottomLeftCorner, ["bottom_left_corner", "sw-resize"] },
         { StandardCursorType.BottomRightCorner, ["bottom_right_corner", "se-resize"] },
-        { StandardCursorType.DragMove, ["grabbing", "dnd-move"] },
+        { StandardCursorType.DragMove, ["dnd-move", "grabbing"] },
         { StandardCursorType.DragCopy, ["copy", "dnd-copy"] },
         { StandardCursorType.DragLink, ["alias", "dnd-link"] },
+        // CSS/XDG standard shapes: standard name first, then aliases that predate it
+        // in older themes, ending in a name every X cursor theme is required to ship.
+        { StandardCursorType.SizeNorthWestSouthEast, ["nwse-resize", "size_fdiag", "top_left_corner"] },
+        { StandardCursorType.SizeNorthEastSouthWest, ["nesw-resize", "size_bdiag", "top_right_corner"] },
+        { StandardCursorType.Grab, ["grab", "openhand", "hand1"] },
+        { StandardCursorType.Grabbing, ["grabbing", "closedhand", "hand2"] },
+        { StandardCursorType.ZoomIn, ["zoom-in"] },
+        { StandardCursorType.ZoomOut, ["zoom-out"] },
+        { StandardCursorType.Cell, ["cell", "cross"] },
+        { StandardCursorType.VerticalText, ["vertical-text"] },
+        { StandardCursorType.ContextualMenu, ["context-menu"] },
+        { StandardCursorType.NoDrop, ["no-drop", "forbidden", "crossed_circle"] },
+        { StandardCursorType.AllScroll, ["all-scroll", "fleur"] },
+        { StandardCursorType.ColResize, ["col-resize", "sb_h_double_arrow"] },
+        { StandardCursorType.RowResize, ["row-resize", "sb_v_double_arrow"] },
     };
 
     public WaylandCursorManager(WlDisplay display, WlShm shm, WlCompositor compositor)
@@ -99,13 +114,24 @@ partial class WaylandCursorManager : IDisposable
     /// </summary>
     internal CursorEntry? GetCursor(StandardCursorType type)
     {
+        var resolved = ResolveCursorType(t => _cursors.TryGetValue(t, out var entry) && entry is not null, type);
+        return resolved is { } resolvedType && _cursors.TryGetValue(resolvedType, out var entry2) ? entry2 : null;
+    }
+
+    /// <summary>
+    /// Decides which cursor type is actually shown: the requested one when its theme
+    /// cursor loaded, otherwise Arrow when that loaded, otherwise null (hide the cursor).
+    /// Pure so tests can simulate themes missing the CSS/XDG names.
+    /// </summary>
+    internal static StandardCursorType? ResolveCursorType(Func<StandardCursorType, bool> isCursorLoaded, StandardCursorType type)
+    {
         if (type == StandardCursorType.None)
             return null;
 
-        if (_cursors.TryGetValue(type, out var entry))
-            return entry ?? (type != StandardCursorType.Arrow ? GetCursor(StandardCursorType.Arrow) : null);
+        if (isCursorLoaded(type))
+            return type;
 
-        return GetCursor(StandardCursorType.Arrow);
+        return type != StandardCursorType.Arrow ? ResolveCursorType(isCursorLoaded, StandardCursorType.Arrow) : null;
     }
 
     public void Dispose()

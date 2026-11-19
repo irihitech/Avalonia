@@ -259,6 +259,7 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Headless.NUnit.PerTest.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerAssembly.UnitTests");
             RunCoreTest("Avalonia.Headless.XUnit.PerTest.UnitTests");
+            RunCoreTest("Avalonia.Cursors.UnitTests");
 
             if (Parameters.IsRunningOnWindows)
                 RunCoreTest("Avalonia.UnitTests.WpfCompare");

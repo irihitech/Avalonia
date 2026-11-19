@@ -32,11 +32,21 @@ namespace Avalonia.Input
         DragCopy,
         DragLink,
         None,
-        
-        // Not available in GTK directly, see https://www.pixelbeat.org/programming/x_cursors/
-        // We might enable them later, preferably, by loading pixmax directly from theme with fallback image
-        // SizeNorthWestSouthEast,
-        // SizeNorthEastSouthWest,
+
+        // CSS cursor / XDG cursor-names standard shapes.
+        SizeNorthWestSouthEast,
+        SizeNorthEastSouthWest,
+        Grab,
+        Grabbing,
+        ZoomIn,
+        ZoomOut,
+        Cell,
+        VerticalText,
+        ContextualMenu,
+        NoDrop,
+        AllScroll,
+        ColResize,
+        RowResize,
     }
 
     public class Cursor : IDisposable

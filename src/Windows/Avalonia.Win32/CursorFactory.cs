@@ -40,7 +40,35 @@ namespace Avalonia.Win32
             }
         }
 
-        private static readonly Dictionary<StandardCursorType, int> CursorTypeMapping = new Dictionary
+        private static readonly Dictionary<StandardCursorType, CursorImpl> Cache =
+            new Dictionary<StandardCursorType, CursorImpl>();
+
+        public ICursorImpl GetCursor(StandardCursorType cursorType)
+        {
+            if (!Cache.TryGetValue(cursorType, out var rv))
+            {
+                rv = new CursorImpl(
+                    UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(StandardCursorTypeIds.Mapping[cursorType])));
+                Cache.Add(cursorType, rv);
+            }
+
+            return rv;
+        }
+
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
+        {
+            return new CursorImpl(new Win32Icon(cursor, hotSpot));
+        }
+    }
+
+    /// <summary>
+    /// Maps <see cref="StandardCursorType"/> to Win32 cursor resource ids (IDC_*).
+    /// Kept in a separate type so the mapping can be validated by tests without
+    /// triggering <see cref="CursorFactory"/>'s static constructor, which P/Invokes ole32.dll.
+    /// </summary>
+    internal static class StandardCursorTypeIds
+    {
+        internal static readonly Dictionary<StandardCursorType, int> Mapping = new Dictionary
             <StandardCursorType, int>
         {
             {StandardCursorType.None, 0},
@@ -73,27 +101,24 @@ namespace Avalonia.Win32
             {StandardCursorType.DragMove, 32516},
             {StandardCursorType.DragCopy, 32516},
             {StandardCursorType.DragLink, 32516},
+
+            // Exact system cursor equivalents
+            {StandardCursorType.SizeNorthWestSouthEast, 32642},
+            {StandardCursorType.SizeNorthEastSouthWest, 32643},
+            {StandardCursorType.NoDrop, 32648},
+            {StandardCursorType.AllScroll, 32646},
+            {StandardCursorType.ColResize, 32644},
+            {StandardCursorType.RowResize, 32645},
+
+            // No direct Win32 equivalent — mapped to the closest system cursor
+            {StandardCursorType.Grab, 32649},
+            {StandardCursorType.Grabbing, 32649},
+            {StandardCursorType.ZoomIn, 32515},
+            {StandardCursorType.ZoomOut, 32515},
+            {StandardCursorType.Cell, 32515},
+            {StandardCursorType.VerticalText, 32513},
+            {StandardCursorType.ContextualMenu, 32512},
         };
-
-        private static readonly Dictionary<StandardCursorType, CursorImpl> Cache =
-            new Dictionary<StandardCursorType, CursorImpl>();
-
-        public ICursorImpl GetCursor(StandardCursorType cursorType)
-        {
-            if (!Cache.TryGetValue(cursorType, out var rv))
-            {
-                rv = new CursorImpl(
-                    UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(CursorTypeMapping[cursorType])));
-                Cache.Add(cursorType, rv);
-            }
-
-            return rv;
-        }
-
-        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
-        {
-            return new CursorImpl(new Win32Icon(cursor, hotSpot));
-        }
     }
 
     internal class CursorImpl : ICursorImpl, IPlatformHandle

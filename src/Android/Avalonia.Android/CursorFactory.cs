@@ -41,35 +41,9 @@ namespace Avalonia.Android
 
         public CursorImpl(StandardCursorType cursorType)
         {
-            PointerIcon = PointerIconCompat.GetSystemIcon(global::Android.App.Application.Context, GetPointerIconType(cursorType));
+            PointerIcon = PointerIconCompat.GetSystemIcon(
+                global::Android.App.Application.Context, StandardCursorTypePointerIcons.GetMapping(cursorType));
         }
-
-        private int GetPointerIconType(StandardCursorType cursorType) => cursorType switch
-        {
-            StandardCursorType.Arrow => PointerIconCompat.TypeArrow,
-            StandardCursorType.Cross => PointerIconCompat.TypeCrosshair,
-            StandardCursorType.Hand => PointerIconCompat.TypeHand,
-            StandardCursorType.Ibeam => PointerIconCompat.TypeText,
-            StandardCursorType.Wait or StandardCursorType.AppStarting => PointerIconCompat.TypeWait,
-            StandardCursorType.Help => PointerIconCompat.TypeHelp,
-            StandardCursorType.No => PointerIconCompat.TypeNoDrop,
-            StandardCursorType.SizeAll => PointerIconCompat.TypeAllScroll,
-            StandardCursorType.SizeNorthSouth or
-                StandardCursorType.TopSide or
-                StandardCursorType.BottomSide => PointerIconCompat.TypeVerticalDoubleArrow,
-            StandardCursorType.SizeWestEast or
-                StandardCursorType.LeftSide or
-                StandardCursorType.RightSide => PointerIconCompat.TypeHorizontalDoubleArrow,
-            StandardCursorType.TopLeftCorner => PointerIconCompat.TypeTopLeftDiagonalDoubleArrow,
-            StandardCursorType.TopRightCorner => PointerIconCompat.TypeTopRightDiagonalDoubleArrow,
-            StandardCursorType.BottomLeftCorner => PointerIconCompat.TypeTopRightDiagonalDoubleArrow,
-            StandardCursorType.BottomRightCorner => PointerIconCompat.TypeTopLeftDiagonalDoubleArrow,
-            StandardCursorType.DragMove => PointerIconCompat.TypeGrabbing,
-            StandardCursorType.DragCopy => PointerIconCompat.TypeCopy,
-            StandardCursorType.DragLink => PointerIconCompat.TypeAlias,
-            StandardCursorType.None => PointerIconCompat.TypeNull,
-            _ => PointerIconCompat.TypeArrow,
-        };
 
         public void Dispose() { }
     }

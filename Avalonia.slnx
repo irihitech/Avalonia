@@ -142,6 +142,7 @@
     <Project Path="tests/Avalonia.Base.UnitTests/Avalonia.Base.UnitTests.csproj" />
     <Project Path="tests/Avalonia.Benchmarks/Avalonia.Benchmarks.csproj" />
     <Project Path="tests/Avalonia.Controls.UnitTests/Avalonia.Controls.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Cursors.UnitTests/Avalonia.Cursors.UnitTests.csproj" />
     <Project Path="tests/Avalonia.DesignerSupport.TestApp/Avalonia.DesignerSupport.TestApp.csproj" />
     <Project Path="tests/Avalonia.DesignerSupport.Tests/Avalonia.DesignerSupport.Tests.csproj" />
     <Project Path="tests/Avalonia.Generators.Tests/Avalonia.Generators.Tests.csproj" />

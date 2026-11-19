@@ -20,4 +20,8 @@
     <Compile Remove="..\Shared\SourceGeneratorAttributes.cs"/>
     <None Include="..\Shared\SourceGeneratorAttributes.cs" Visible="false"/>
   </ItemGroup>
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Cursors.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
 </Project>
